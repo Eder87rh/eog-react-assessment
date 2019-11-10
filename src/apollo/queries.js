@@ -1,3 +1,7 @@
+import { gql } from 'apollo-boost';
+
 export const getMetrics = gql `
-  getMetrics
+  query {
+    getMetrics
+  }
 `;
