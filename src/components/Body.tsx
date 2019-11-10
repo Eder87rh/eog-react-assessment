@@ -2,6 +2,7 @@ import * as React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { Typography } from '@material-ui/core';
 import { minHeight } from '@material-ui/system';
+import Chart from './Chart';
 
 export interface BodyProps {
   
@@ -23,6 +24,7 @@ const Body: React.SFC<BodyProps> = () => {
     <Typography variant="h5">
       Real time dashboard by Eder Ramírez
     </Typography>
+    <Chart/>
   </div>
   );
 }
