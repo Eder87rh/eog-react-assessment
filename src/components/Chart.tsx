@@ -11,6 +11,7 @@ export interface ChartProps {
 const Chart: React.SFC<ChartProps> = (props: ChartProps) => {
   const [ selectedMetrics, setSelectedMetrics ] = React.useState<Array<string>>([])
   const [ inputArray, setInputArray ] = React.useState<Array<string>>([])
+  const [ chartData, setChartData ] = React.useState<Array<any>>([])
 
   React.useEffect(() => {
     let selectedValues:Array<string> = [];
@@ -22,6 +23,7 @@ const Chart: React.SFC<ChartProps> = (props: ChartProps) => {
 
     setSelectedMetrics(selectedValues);
 
+    console.log("USEEFFECT: rops.metricsSelected", props.metricsSelected)
    
   }, [props.metricsSelected])
 
@@ -39,9 +41,10 @@ const Chart: React.SFC<ChartProps> = (props: ChartProps) => {
   }, [selectedMetrics])
   
 
-  React.useEffect(() => {
-    console.log("USEEFFECT ->inputArray", inputArray)
-  }, [inputArray])
+  let data:Array<any> = []
+  //let chartData:Array<any> = []
+
+  
 
   const { 
     data: measurementData, 
@@ -53,19 +56,31 @@ const Chart: React.SFC<ChartProps> = (props: ChartProps) => {
     }
   });
 
+  React.useEffect(() => {
+    console.log("USEEFFECT ->inputArray", inputArray)
+
+    if(measurementData) {
+      measurementData.getMultipleMeasurements.map((el: any) => {
+        el.measurements.map((el2: any) => { 
+          el2.at = moment(el2.at).format('MMMM Do YYYY, h:mm:ss a')
+          el2.yaxis = el2.at.slice(-11)
+          el2[el2.metric]= el2.value
+          data.push(el2)
+        });  
+      })
+      //chartData = data
+      setChartData(data);
+      console.log("TCL: data", chartData)
+
+    }
+
+
+  }, [measurementData])
+
   if (measurementLoading) return <p>Loading...</p>;
   if (measurementError) return <p>Error :(</p>;
 
-  let chartData:Array<any> = []
-  measurementData.getMultipleMeasurements.map((el: any) => {
-    el.measurements.map((el2: any) => { 
-      el2.at = moment(el2.at).format('MMMM Do YYYY, h:mm:ss a')
-      el2.yaxis = el2.at.slice(-11)
-      el2[el2.metric]= el2.value
-      chartData.push(el2)
-    });  
-  })
-  console.log("TCL: chartData", chartData)
+ 
 
 
   return (
