@@ -1,16 +1,3 @@
-/* import ApolloClient from 'apollo-boost';
-import { WebSocketLink } from 'apollo-link-ws';
-
-const wsLink = new WebSocketLink({
-  uri: `ws://localhost:5000/`,
-  options: {
-    reconnect: true
-  }
-});
-
-const client = new ApolloClient({
-  uri: 'https://react.eogresources.com/graphql',
-}); */
 
 import { ApolloClient } from 'apollo-client';
 import { InMemoryCache } from 'apollo-cache-inmemory';
