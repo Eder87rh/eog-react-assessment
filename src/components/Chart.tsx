@@ -67,48 +67,78 @@ const Chart: React.SFC<ChartProps> = (props: ChartProps) => {
     console.log("TCL: currentTime", currentTime)
     let currentData = newData.newMeasurement;
 
+    
+
+
     if(currentData.at.toString() === currentTime) {
       console.log("No");
       
       let newElement = localStorage.getItem("newElement")
+      let selected = false;
+
+      // @ts-ignore
+      if(newElement) {
+        const newElementKeys = Object.keys(JSON.parse(newElement));
+          
+        console.log("TCL: newElementKeys", newElementKeys)
+        console.log("TCL: selectedMetrics", selectedMetrics)
+        selected = newElementKeys.some(key =>  selectedMetrics.includes(key))
+        console.log("TCL: selected", selected)
+      }
 
       if(newElement) {
         newElement = JSON.parse(newElement)
         
         var newVal = {
           // @ts-ignore
-          ...newElement,
-          ...currentData,
-        };
+            ...newElement,
+            ...currentData,
+          };
         
-        newVal.at = moment(currentData.at).format('MMMM Do YYYY, h:mm:ss a');
-        newVal.yaxis = newVal.at.slice(-11);
-        newVal[currentData.metric] = currentData.value;
-      
-        localStorage.setItem("newElement", JSON.stringify(newVal));
+        if(selected){
+          newVal.at = moment(currentData.at).format('MMMM Do YYYY, h:mm:ss a');
+          newVal.yaxis = newVal.at.slice(-11);
+          newVal[currentData.metric] = currentData.value;
+        }
+          
+          localStorage.setItem("newElement", JSON.stringify(newVal));
       } else {
         var newVal = currentData;
         
-        newVal.at = moment(currentData.at).format('MMMM Do YYYY, h:mm:ss a');
-        newVal.yaxis = newVal.at.slice(-11);
-        newVal[currentData.metric] = currentData.value;
-      
-        localStorage.setItem("newElement", JSON.stringify(newVal));
+        if(selected){
+          newVal.at = moment(currentData.at).format('MMMM Do YYYY, h:mm:ss a');
+          newVal.yaxis = newVal.at.slice(-11);
+          newVal[currentData.metric] = currentData.value;
+        }
+        
+          localStorage.setItem("newElement", JSON.stringify(newVal));
       }
 
     } else {
       console.log("Yes")
 
       let newElement = localStorage.getItem("newElement")
-      if(newElement && chartData.length > 0) {
+
+      
+      if(newElement && chartData.length > 0 ) {
+
+        const newElementKeys = Object.keys(JSON.parse(newElement));
+        
+        console.log("TCL: newElementKeys", newElementKeys)
+        console.log("TCL: selectedMetrics", selectedMetrics)
+        const selected = newElementKeys.some(key =>  selectedMetrics.includes(key))
+        console.log("TCL: selected", selected)
+
         newElement = JSON.parse(newElement)
+
+
         console.log("TCL: chartData", chartData)
         console.log("TCL: newElement", newElement)
 
         let finalElement = [
           ...chartData,
           newElement
-        ]/* .shift() */;
+        ];
         console.log("TCL: finalElement", finalElement)
         finalElement.shift();
         console.log("TCL: finalElement", finalElement)
@@ -121,9 +151,11 @@ const Chart: React.SFC<ChartProps> = (props: ChartProps) => {
           ...currentData,
         };
   
-        newVal.at = moment(currentData.at).format('MMMM Do YYYY, h:mm:ss a');
-        newVal.yaxis = newVal.at.slice(-11);
-        newVal[currentData.metric] = currentData.value;
+        if(selected) {
+          newVal.at = moment(currentData.at).format('MMMM Do YYYY, h:mm:ss a');
+          newVal.yaxis = newVal.at.slice(-11);
+          newVal[currentData.metric] = currentData.value;
+        }
         
         localStorage.setItem("newElement", JSON.stringify(newVal));
   
