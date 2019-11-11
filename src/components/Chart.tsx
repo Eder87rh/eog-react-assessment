@@ -26,13 +26,10 @@ const Chart: React.SFC<ChartProps> = (props: ChartProps) => {
     });
 
     setSelectedMetrics(selectedValues);
-
-    console.log("USEEFFECT: rops.metricsSelected", props.metricsSelected)
    
   }, [props.metricsSelected])
 
   React.useEffect(() => {
-    console.log("TCL: useEffect ->selectedMetrics", selectedMetrics)
     const inputArray:Array<any> = [];
     
     selectedMetrics.map(metric => {
@@ -60,18 +57,15 @@ const Chart: React.SFC<ChartProps> = (props: ChartProps) => {
   const { data: newData } = useSubscription(newMeasurement)
 
   if(newData) {
-    console.log("TCL: newData", newData)
 
     const currentTime = localStorage.getItem("currentTimestamp");
     localStorage.setItem("currentTimestamp", newData.newMeasurement.at)
-    console.log("TCL: currentTime", currentTime)
     let currentData = newData.newMeasurement;
 
     
 
 
     if(currentData.at.toString() === currentTime) {
-      console.log("No");
       
       let newElement = localStorage.getItem("newElement")
       let selected = false;
@@ -79,11 +73,8 @@ const Chart: React.SFC<ChartProps> = (props: ChartProps) => {
       // @ts-ignore
       if(newElement) {
         const newElementKeys = Object.keys(JSON.parse(newElement));
-          
-        console.log("TCL: newElementKeys", newElementKeys)
-        console.log("TCL: selectedMetrics", selectedMetrics)
+
         selected = newElementKeys.some(key =>  selectedMetrics.includes(key))
-        console.log("TCL: selected", selected)
       }
 
       if(newElement) {
@@ -115,7 +106,6 @@ const Chart: React.SFC<ChartProps> = (props: ChartProps) => {
       }
 
     } else {
-      console.log("Yes")
 
       let newElement = localStorage.getItem("newElement")
 
@@ -123,25 +113,16 @@ const Chart: React.SFC<ChartProps> = (props: ChartProps) => {
       if(newElement && chartData.length > 0 ) {
 
         const newElementKeys = Object.keys(JSON.parse(newElement));
-        
-        console.log("TCL: newElementKeys", newElementKeys)
-        console.log("TCL: selectedMetrics", selectedMetrics)
         const selected = newElementKeys.some(key =>  selectedMetrics.includes(key))
-        console.log("TCL: selected", selected)
 
         newElement = JSON.parse(newElement)
 
-
-        console.log("TCL: chartData", chartData)
-        console.log("TCL: newElement", newElement)
 
         let finalElement = [
           ...chartData,
           newElement
         ];
-        console.log("TCL: finalElement", finalElement)
         finalElement.shift();
-        console.log("TCL: finalElement", finalElement)
 
         localStorage.removeItem("newElement");
   
@@ -166,7 +147,6 @@ const Chart: React.SFC<ChartProps> = (props: ChartProps) => {
   }
 
   React.useEffect(() => {
-    console.log("USEEFFECT ->inputArray", inputArray)
     let data:Array<any> = []
     if(measurementData && measurementData.getMultipleMeasurements.length > 0) {
       const arrayLength = measurementData.getMultipleMeasurements[0].measurements.length;
@@ -189,7 +169,6 @@ const Chart: React.SFC<ChartProps> = (props: ChartProps) => {
         });  
       })
       setChartData(data);
-      console.log("TCL: data", chartData)
 
     }
 
