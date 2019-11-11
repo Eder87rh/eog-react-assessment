@@ -12,6 +12,8 @@ const Chart: React.SFC<ChartProps> = (props: ChartProps) => {
   const [ selectedMetrics, setSelectedMetrics ] = React.useState<Array<string>>([])
   const [ inputArray, setInputArray ] = React.useState<Array<string>>([])
   const [ chartData, setChartData ] = React.useState<Array<any>>([])
+  const before = moment().unix();
+  const after = moment().subtract(30, 'minutes').unix();
 
   React.useEffect(() => {
     let selectedValues:Array<string> = [];
@@ -30,20 +32,19 @@ const Chart: React.SFC<ChartProps> = (props: ChartProps) => {
   React.useEffect(() => {
     console.log("TCL: useEffect ->selectedMetrics", selectedMetrics)
     const inputArray:Array<any> = [];
+    
     selectedMetrics.map(metric => {
       inputArray.push({
         metricName: metric,
-        after: moment().subtract(30, 'minutes').unix(),
-        before: moment().unix()
+        after,
+        before
       })
     })
     setInputArray(inputArray);
   }, [selectedMetrics])
   
 
-  let data:Array<any> = []
-  //let chartData:Array<any> = []
-
+  
   
 
   const { 
@@ -58,17 +59,35 @@ const Chart: React.SFC<ChartProps> = (props: ChartProps) => {
 
   React.useEffect(() => {
     console.log("USEEFFECT ->inputArray", inputArray)
+    let data:Array<any> = []
+    if(measurementData && measurementData.getMultipleMeasurements.length > 0) {
+      const arrayLength = measurementData.getMultipleMeasurements[0].measurements.length;
+      console.log("TCL: arrayLength", arrayLength)
+      measurementData.getMultipleMeasurements.map((el: any, index: number) => {
 
-    if(measurementData) {
-      measurementData.getMultipleMeasurements.map((el: any) => {
-        el.measurements.map((el2: any) => { 
+        //el.measurements[index]
+        
+        
+        el.measurements.map((el2: any, index2:number) => { 
+          
+          //el.measurements[index][index2]
+          
           el2.at = moment(el2.at).format('MMMM Do YYYY, h:mm:ss a')
           el2.yaxis = el2.at.slice(-11)
           el2[el2.metric]= el2.value
-          data.push(el2)
+          
+          
+          if (index > 0) {
+            data[index2] = { 
+              ...data[index2],
+              ...el2
+            }
+          } else {
+            data.push(el2)
+          }
+
         });  
       })
-      //chartData = data
       setChartData(data);
       console.log("TCL: data", chartData)
 
