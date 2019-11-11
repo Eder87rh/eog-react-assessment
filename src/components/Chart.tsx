@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { LineChart, Line, CartesianGrid, XAxis, YAxis, Legend, Tooltip } from 'recharts';
 import { getMultipleMeasurements } from '../apollo/queries';
-import { useQuery } from '@apollo/react-hooks';
+import { newMeasurement } from '../apollo/subscriptions';
+import { useQuery, useSubscription } from '@apollo/react-hooks';
 import moment from 'moment';
 
 export interface ChartProps {
@@ -14,6 +15,7 @@ const Chart: React.SFC<ChartProps> = (props: ChartProps) => {
   const [ chartData, setChartData ] = React.useState<Array<any>>([])
   const before = moment().unix();
   const after = moment().subtract(30, 'minutes').unix();
+
 
   React.useEffect(() => {
     let selectedValues:Array<string> = [];
@@ -54,6 +56,82 @@ const Chart: React.SFC<ChartProps> = (props: ChartProps) => {
       input: inputArray
     }
   });
+
+  const { data: newData } = useSubscription(newMeasurement)
+
+  if(newData) {
+    console.log("TCL: newData", newData)
+
+    const currentTime = localStorage.getItem("currentTimestamp");
+    localStorage.setItem("currentTimestamp", newData.newMeasurement.at)
+    console.log("TCL: currentTime", currentTime)
+    let currentData = newData.newMeasurement;
+
+    if(currentData.at.toString() === currentTime) {
+      console.log("No");
+      
+      let newElement = localStorage.getItem("newElement")
+
+      if(newElement) {
+        newElement = JSON.parse(newElement)
+        
+        var newVal = {
+          // @ts-ignore
+          ...newElement,
+          ...currentData,
+        };
+        
+        newVal.at = moment(currentData.at).format('MMMM Do YYYY, h:mm:ss a');
+        newVal.yaxis = newVal.at.slice(-11);
+        newVal[currentData.metric] = currentData.value;
+      
+        localStorage.setItem("newElement", JSON.stringify(newVal));
+      } else {
+        var newVal = currentData;
+        
+        newVal.at = moment(currentData.at).format('MMMM Do YYYY, h:mm:ss a');
+        newVal.yaxis = newVal.at.slice(-11);
+        newVal[currentData.metric] = currentData.value;
+      
+        localStorage.setItem("newElement", JSON.stringify(newVal));
+      }
+
+    } else {
+      console.log("Yes")
+
+      let newElement = localStorage.getItem("newElement")
+      if(newElement && chartData.length > 0) {
+        newElement = JSON.parse(newElement)
+        console.log("TCL: chartData", chartData)
+        console.log("TCL: newElement", newElement)
+
+        let finalElement = [
+          ...chartData,
+          newElement
+        ]/* .shift() */;
+        console.log("TCL: finalElement", finalElement)
+        finalElement.shift();
+        console.log("TCL: finalElement", finalElement)
+
+        localStorage.removeItem("newElement");
+  
+        var newVal = {
+          // @ts-ignore
+          ...newElement,
+          ...currentData,
+        };
+  
+        newVal.at = moment(currentData.at).format('MMMM Do YYYY, h:mm:ss a');
+        newVal.yaxis = newVal.at.slice(-11);
+        newVal[currentData.metric] = currentData.value;
+        
+        localStorage.setItem("newElement", JSON.stringify(newVal));
+  
+        setChartData(finalElement);
+      }
+
+    }
+  }
 
   React.useEffect(() => {
     console.log("USEEFFECT ->inputArray", inputArray)
