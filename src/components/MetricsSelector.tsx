@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { FormControl, FormLabel, FormGroup, FormControlLabel, Checkbox } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
+import Chart from './Chart';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -20,9 +21,6 @@ const MetricsSelector: React.SFC<MetricsSelectorProps> = (props: MetricsSelector
   const classes = useStyles();
   const [state, setState] = React.useState(props.metricsInitialState);
 
- /*  React.useEffect(() => {
-    setState(props.metricsInitialState);
-  },[props.metricsInitialState] ) */
 
   const handleChange = (name: string) => (event: any) => {
     setState({ ...state, [name]: event.target.checked});
@@ -33,7 +31,7 @@ const MetricsSelector: React.SFC<MetricsSelectorProps> = (props: MetricsSelector
   return (
     <form>
       <FormControl component="fieldset" className={classes.formControl}>
-        <FormLabel component="legend">Assign responsibility</FormLabel>
+        <FormLabel component="legend">Select metrics</FormLabel>
         <FormGroup>
           {
             props.metrics.map((metric, index) => (
@@ -47,6 +45,7 @@ const MetricsSelector: React.SFC<MetricsSelectorProps> = (props: MetricsSelector
         </FormGroup>
 
       </FormControl>
+      <Chart/>
     </form>
   );
 }
