@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { Typography } from '@material-ui/core';
-import { minHeight } from '@material-ui/system';
 import { useQuery } from '@apollo/react-hooks';
 import { getMetrics } from '../apollo/queries';
 import MetricsSelector from './MetricsSelector';

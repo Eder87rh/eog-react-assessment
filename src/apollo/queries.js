@@ -5,3 +5,19 @@ export const getMetrics = gql `
     getMetrics
   }
 `;
+
+export const getMultipleMeasurements = gql `
+  query(
+    $input: [MeasurementQuery]
+  ){
+    getMultipleMeasurements(input: $input) {
+      metric
+      measurements {
+        metric
+        at
+        value
+        unit
+      }
+    }
+  }
+`;

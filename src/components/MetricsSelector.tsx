@@ -26,8 +26,6 @@ const MetricsSelector: React.SFC<MetricsSelectorProps> = (props: MetricsSelector
     setState({ ...state, [name]: event.target.checked});
   };
 
-  const key: string = 'name' 
-
   return (
     <form>
       <FormControl component="fieldset" className={classes.formControl}>
@@ -45,7 +43,7 @@ const MetricsSelector: React.SFC<MetricsSelectorProps> = (props: MetricsSelector
         </FormGroup>
 
       </FormControl>
-      <Chart/>
+      <Chart metricsSelected={state}/>
     </form>
   );
 }
