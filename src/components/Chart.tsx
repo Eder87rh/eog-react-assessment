@@ -53,16 +53,21 @@ const Chart: React.SFC<ChartProps> = (props: ChartProps) => {
   if (measurementLoading) return <p>Loading...</p>;
   if (measurementError) return <p>Error :(</p>;
 
-  
+  let chartData:Array<any> = []
+  measurementData.getMultipleMeasurements.map((el: any) => {
+    console.log("TCL: el.measurement", el.measurements)
+      el.measurements.map((el2: any) => chartData.push(el2));  
+  })
+  console.log("TCL: chartData", chartData)
 
 
   return (
     <div>
-      <LineChart width={900} height={500} data={data} margin={{ top: 50, right: 20, bottom: 5, left: 0 }}>
-        <Line type="monotone" dataKey="uv" stroke="#8884d8" />
+      <LineChart width={900} height={500} data={chartData} margin={{ top: 50, right: 20, bottom: 5, left: 0 }}>
+        <Line type="monotone" dataKey="value" stroke="#8884d8" />
         <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
-        <XAxis dataKey="name" />
-        <YAxis />
+        <XAxis dataKey="at" />
+        <YAxis dataKey="value"/>
       </LineChart>
     </div>
   );
