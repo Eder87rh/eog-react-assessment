@@ -1,18 +1,8 @@
 import * as React from 'react';
-import { LineChart, Line, CartesianGrid, XAxis, YAxis } from 'recharts';
+import { LineChart, Line, CartesianGrid, XAxis, YAxis, Legend, Tooltip } from 'recharts';
 import { getMultipleMeasurements } from '../apollo/queries';
 import { useQuery } from '@apollo/react-hooks';
 import moment from 'moment';
-
-const data = [
-  {name: 'Page A', uv: 400, pv: 2400, amt: 2400},
-  {name: 'Page A', uv: 500, pv: 2400, amt: 2400},
-  {name: 'Page A', uv: 600, pv: 2400, amt: 2400},
-  {name: 'Page A', uv: 200, pv: 2400, amt: 2400},
-  {name: 'Page A', uv: 600, pv: 2400, amt: 2400},
-  {name: 'Page A', uv: 100, pv: 2400, amt: 2400},
-  {name: 'Page A', uv: 600, pv: 2400, amt: 2400},
-];
 
 export interface ChartProps {
   metricsSelected: object
@@ -20,6 +10,7 @@ export interface ChartProps {
 
 const Chart: React.SFC<ChartProps> = (props: ChartProps) => {
   const [ selectedMetrics, setSelectedMetrics ] = React.useState<Array<string>>([])
+  const [ inputArray, setInputArray ] = React.useState<Array<string>>([])
 
   React.useEffect(() => {
     let selectedValues:Array<string> = [];
@@ -30,9 +21,27 @@ const Chart: React.SFC<ChartProps> = (props: ChartProps) => {
     });
 
     setSelectedMetrics(selectedValues);
+
+   
   }, [props.metricsSelected])
 
-  console.log("TCL: selectedValues", selectedMetrics)
+  React.useEffect(() => {
+    console.log("TCL: useEffect ->selectedMetrics", selectedMetrics)
+    const inputArray:Array<any> = [];
+    selectedMetrics.map(metric => {
+      inputArray.push({
+        metricName: metric,
+        after: moment().subtract(30, 'minutes').unix(),
+        before: moment().unix()
+      })
+    })
+    setInputArray(inputArray);
+  }, [selectedMetrics])
+  
+
+  React.useEffect(() => {
+    console.log("USEEFFECT ->inputArray", inputArray)
+  }, [inputArray])
 
   const { 
     data: measurementData, 
@@ -40,13 +49,7 @@ const Chart: React.SFC<ChartProps> = (props: ChartProps) => {
     error: measurementError 
   } = useQuery(getMultipleMeasurements, {
     variables: {
-      input: [
-        {
-          metricName: "oilTemp",
-          after: moment().subtract(30, 'minutes').unix(),
-          before: moment().unix()
-        }
-      ]
+      input: inputArray
     }
   });
 
@@ -55,8 +58,12 @@ const Chart: React.SFC<ChartProps> = (props: ChartProps) => {
 
   let chartData:Array<any> = []
   measurementData.getMultipleMeasurements.map((el: any) => {
-    console.log("TCL: el.measurement", el.measurements)
-      el.measurements.map((el2: any) => chartData.push(el2));  
+    el.measurements.map((el2: any) => { 
+      el2.at = moment(el2.at).format('MMMM Do YYYY, h:mm:ss a')
+      el2.yaxis = el2.at.slice(-11)
+      el2[el2.metric]= el2.value
+      chartData.push(el2)
+    });  
   })
   console.log("TCL: chartData", chartData)
 
@@ -64,10 +71,17 @@ const Chart: React.SFC<ChartProps> = (props: ChartProps) => {
   return (
     <div>
       <LineChart width={900} height={500} data={chartData} margin={{ top: 50, right: 20, bottom: 5, left: 0 }}>
-        <Line type="monotone" dataKey="value" stroke="#8884d8" />
+        <Line type="monotone" dataKey="injValveOpen" stroke="#8884d8" />
+        <Line type="monotone" dataKey="oilTemp" stroke="#8884d8" />
+        <Line type="monotone" dataKey="tubingPressure" stroke="#8884d8" />
+        <Line type="monotone" dataKey="flareTemp" stroke="#8884d8" />
+        <Line type="monotone" dataKey="casingPressure" stroke="#8884d8" />
+        <Line type="monotone" dataKey="waterTemp" stroke="#8884d8" />
         <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
-        <XAxis dataKey="at" />
+        <XAxis dataKey="yaxis" />
         <YAxis dataKey="value"/>
+        <Legend/>
+        <Tooltip/>
       </LineChart>
     </div>
   );
