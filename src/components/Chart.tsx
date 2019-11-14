@@ -4,6 +4,7 @@ import { getMultipleMeasurements } from '../apollo/queries';
 import { newMeasurement } from '../apollo/subscriptions';
 import { useQuery, useSubscription } from '@apollo/react-hooks';
 import moment from 'moment';
+import { Card, CardContent, Typography, Grid } from '@material-ui/core';
 
 export interface ChartProps {
   metricsSelected: object
@@ -23,11 +24,12 @@ const Chart: React.SFC<ChartProps> = (props: ChartProps) => {
       if(props.metricsSelected[k as keyof typeof props.metricsSelected]===true) {
         selectedValues.push(k);
       }
+      return null;
     });
 
     setSelectedMetrics(selectedValues);
    
-  }, [props.metricsSelected])
+  }, [props.metricsSelected, props])
 
   React.useEffect(() => {
     const inputArray:Array<any> = [];
@@ -38,8 +40,10 @@ const Chart: React.SFC<ChartProps> = (props: ChartProps) => {
         after,
         before
       })
+      return null;
     })
     setInputArray(inputArray);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedMetrics])
   
 
@@ -57,52 +61,36 @@ const Chart: React.SFC<ChartProps> = (props: ChartProps) => {
   const { data: newData } = useSubscription(newMeasurement)
 
   if(newData) {
-
     const currentTime = localStorage.getItem("currentTimestamp");
     localStorage.setItem("currentTimestamp", newData.newMeasurement.at)
     let currentData = newData.newMeasurement;
 
-    
-
-
     if(currentData.at.toString() === currentTime) {
       
       let newElement = localStorage.getItem("newElement")
-      let selected = false;
-
-      // @ts-ignore
-      if(newElement) {
-        const newElementKeys = Object.keys(JSON.parse(newElement));
-
-        selected = newElementKeys.some(key =>  selectedMetrics.includes(key))
-      }
 
       if(newElement) {
         newElement = JSON.parse(newElement)
         
-        var newVal = {
+        let newVal = {
           // @ts-ignore
             ...newElement,
             ...currentData,
           };
         
-        if(selected){
-          newVal.at = moment(currentData.at).format('MMMM Do YYYY, h:mm:ss a');
-          newVal.yaxis = newVal.at.slice(-11);
-          newVal[currentData.metric] = currentData.value;
-        }
+        newVal.at = moment(currentData.at).format('MMMM Do YYYY, h:mm:ss a');
+        newVal.yaxis = newVal.at.slice(-11);
+        newVal[currentData.metric] = currentData.value;
           
-          localStorage.setItem("newElement", JSON.stringify(newVal));
+        localStorage.setItem("newElement", JSON.stringify(newVal));
       } else {
-        var newVal = currentData;
-        
-        if(selected){
-          newVal.at = moment(currentData.at).format('MMMM Do YYYY, h:mm:ss a');
-          newVal.yaxis = newVal.at.slice(-11);
-          newVal[currentData.metric] = currentData.value;
-        }
-        
-          localStorage.setItem("newElement", JSON.stringify(newVal));
+        let newVal = currentData;
+
+        newVal.at = moment(currentData.at).format('MMMM Do YYYY, h:mm:ss a');
+        newVal.yaxis = newVal.at.slice(-11);
+        newVal[currentData.metric] = currentData.value;
+
+        localStorage.setItem("newElement", JSON.stringify(newVal));
       }
 
     } else {
@@ -111,10 +99,6 @@ const Chart: React.SFC<ChartProps> = (props: ChartProps) => {
 
       
       if(newElement && chartData.length > 0 ) {
-
-        const newElementKeys = Object.keys(JSON.parse(newElement));
-        const selected = newElementKeys.some(key =>  selectedMetrics.includes(key))
-
         newElement = JSON.parse(newElement)
 
 
@@ -126,20 +110,17 @@ const Chart: React.SFC<ChartProps> = (props: ChartProps) => {
 
         localStorage.removeItem("newElement");
   
-        var newVal = {
+        let newVal = {
           // @ts-ignore
           ...newElement,
           ...currentData,
         };
-  
-        if(selected) {
-          newVal.at = moment(currentData.at).format('MMMM Do YYYY, h:mm:ss a');
-          newVal.yaxis = newVal.at.slice(-11);
-          newVal[currentData.metric] = currentData.value;
-        }
-        
+
+        newVal.at = moment(currentData.at).format('MMMM Do YYYY, h:mm:ss a');
+        newVal.yaxis = newVal.at.slice(-11);
+        newVal[currentData.metric] = currentData.value;
+
         localStorage.setItem("newElement", JSON.stringify(newVal));
-  
         setChartData(finalElement);
       }
 
@@ -149,7 +130,6 @@ const Chart: React.SFC<ChartProps> = (props: ChartProps) => {
   React.useEffect(() => {
     let data:Array<any> = []
     if(measurementData && measurementData.getMultipleMeasurements.length > 0) {
-      const arrayLength = measurementData.getMultipleMeasurements[0].measurements.length;
       measurementData.getMultipleMeasurements.map((el: any, index: number) => {
 
         el.measurements.map((el2: any, index2:number) => { 
@@ -165,8 +145,9 @@ const Chart: React.SFC<ChartProps> = (props: ChartProps) => {
           } else {
             data.push(el2)
           }
-
-        });  
+          return null
+        });
+        return null;
       })
       setChartData(data);
 
@@ -178,16 +159,48 @@ const Chart: React.SFC<ChartProps> = (props: ChartProps) => {
   if (measurementLoading) return <p>Loading...</p>;
   if (measurementError) return <p>Error :(</p>;
 
- 
+  const colors:Array<string> = ["#8884d8", "#82ca9d", "#133972", "#bf3555", "#e8df35", "#5eef2d"]
+  
+
+
   return (
     <div>
+      <Grid container>
+      {
+        newData  &&
+        selectedMetrics.map(metric => {
+          let newElement = localStorage.getItem("newElement")
+          if(newElement){
+            newElement = JSON.parse(newElement)
+            let keysElement = newElement && Object.keys(newElement);
+
+            return (
+              (keysElement && keysElement.includes(metric)) && newElement && 
+              <Grid key={metric} item xs={12} md={4}>
+                <Card  style={{  margin: "10px" }}>
+                  <CardContent>
+                    <Typography variant="h5">
+                      { metric}
+                    </Typography>
+                    <Typography variant="body1">
+                      { newElement[ metric as keyof typeof newElement] } 
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            )
+          }
+          return null;
+        })
+      }
+      </Grid> 
       <LineChart width={900} height={800} data={chartData} margin={{ top: 50, right: 20, bottom: 5, left: 0 }}>
-        <Line type="monotone" dataKey="injValveOpen" stroke="#8884d8" />
-        <Line type="monotone" dataKey="oilTemp" stroke="#82ca9d" />
-        <Line type="monotone" dataKey="tubingPressure" stroke="#133972" />
-        <Line type="monotone" dataKey="flareTemp" stroke="#bf3555" />
-        <Line type="monotone" dataKey="casingPressure" stroke="#e8df35" />
-        <Line type="monotone" dataKey="waterTemp" stroke="#5eef2d" />
+        {
+          selectedMetrics.map((metric, index) => (
+            <Line key={metric} type="monotone" dataKey={metric} stroke={colors[index]} />
+          ))
+        }
+
         <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
         <XAxis dataKey="yaxis" />
         <YAxis />
